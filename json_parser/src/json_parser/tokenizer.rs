@@ -67,9 +67,15 @@ mod test {
     #[test]
     fn it_should_tokenize() {
         let content = String::from(
-            "{\"pairs\": [ {\"x0\": 312.31, \"x1\": 32.123, \"y0\": -32.123, \"y1\": 32.123,]",
+            "{\"pairs\": [ {\"x0\": 312.31, \"x1\": 32.123, \"y0\": -32.123, \"y1\": 32.123]}",
         );
         let res = tokenize(content);
-        println!("res{:?}", res);
+        let expected: Vec<&str> = vec![
+            "{", "pairs", ":", "[", "{", "x0", ":", "312.31", ",", "x1", ":", "32.123", ",", "y0",
+            ":", "-32.123", ",", "y1", ":", "32.123", "]", "}",
+        ];
+        for (idx, s) in expected.iter().enumerate() {
+            assert_eq!(*s, res[idx])
+        }
     }
 }
