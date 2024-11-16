@@ -1,11 +1,15 @@
 #![allow(dead_code)]
+#![allow(clippy::new_without_default)]
 
-use crate::parser::tokenizer::tokenize;
+use crate::json_parser::parser::parse_tokens;
+use crate::json_parser::tokenizer::tokenize;
+
+pub mod parser;
 pub mod tokenizer;
 
 pub fn json_parse(content: String) -> Pairs {
     let tokens = tokenize(content);
-    parse(tokens)
+    parse_tokens(tokens)
 }
 
 #[derive(Debug)]
@@ -31,17 +35,4 @@ impl Pairs {
     pub fn new() -> Pairs {
         Pairs { pairs: vec![] }
     }
-}
-
-impl Default for Pairs {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-const OPENINGS: [char; 4] = ['{', '[', '"', ':'];
-const CLOSINGS: [char; 4] = ['}', '}', '"', ','];
-
-fn parse(tokens: Vec<String>) -> Pairs {
-    Pairs::new()
 }

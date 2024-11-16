@@ -1,7 +1,7 @@
 pub mod binary_handler;
-pub mod parser;
+pub mod json_parser;
 
-use parser::json_parse;
+use json_parser::json_parse;
 
 use crate::binary_handler::get_check_average;
 use std::env;

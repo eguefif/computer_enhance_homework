@@ -24,7 +24,7 @@ pub fn tokenize(content: String) -> Vec<String> {
                 tokens.push(String::from("["));
             }
             ']' => {
-                if !array_flag || value_flag || key_flag {
+                if !array_flag {
                     panic!("Error tokenizing: list start in the middle of a list or value")
                 }
                 let token = &buffer[0..buffer.len() - 1];
@@ -44,7 +44,7 @@ pub fn tokenize(content: String) -> Vec<String> {
                 tokens.push(String::from(":"));
             }
             ',' => {
-                if !value_flag || key_flag {
+                if !value_flag {
                     panic!("Error tokenizing: value does not end with a coma")
                 }
                 let token = &buffer[0..buffer.len() - 1];
