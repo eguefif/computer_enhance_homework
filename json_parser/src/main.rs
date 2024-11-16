@@ -1,4 +1,8 @@
 pub mod binary_handler;
+pub mod parser;
+
+use parser::json_parse;
+
 use crate::binary_handler::get_check_average;
 use std::env;
 use std::fs;
@@ -12,7 +16,7 @@ fn main() {
     }
     let filename = &args[1];
 
-    let content = fs::read_to_string(filename).expect("Error while reading json file");
+    let _ = fs::read_to_string(filename).expect("Error while reading json file");
 
     let binary;
     if args.len() == 3 {
