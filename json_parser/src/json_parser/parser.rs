@@ -1,6 +1,6 @@
 use crate::json_parser::tokenizer::Token;
 use crate::json_parser::tokenizer::Token::{
-    Bool, BracketClose, BracketOpen, Colon, Comma, CurlyClose, CurlyOpen, Key, Null, Num, Str,
+    Bool, BracketClose, BracketOpen, Comma, CurlyClose, CurlyOpen, Key, Null, Num, Str,
 };
 use crate::json_parser::Value;
 
@@ -27,7 +27,6 @@ fn get_json(iterator: &mut impl Iterator<Item = Token>) -> HashMap<String, Box<V
                     key.clear();
                     value = Box::new(Value::Null);
                 }
-                Colon => continue,
                 Key(v) => key = v,
                 Str(v) => value = Box::new(Value::Str(v)),
                 Num(v) => value = Box::new(Value::Num(v)),

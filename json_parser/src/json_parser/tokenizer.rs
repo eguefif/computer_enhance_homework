@@ -6,7 +6,6 @@ pub enum Token {
     BracketOpen,
     BracketClose,
     Comma,
-    Colon,
     Key(String),
     Str(String),
     Num(f64),
@@ -54,18 +53,13 @@ fn get_token(token: &str, next: Option<&char>) -> Option<Token> {
     }
 
     if is_string(token) {
+        let str = String::from(&token[1..token.len() - 1]);
         if let Some(next_char) = next {
             if *next_char == ':' {
-                let str = String::from(&token[1..token.len() - 1]);
                 return Some(Token::Key(str));
-            } else {
-                let str = String::from(&token[1..token.len() - 1]);
-                return Some(Token::Str(str));
             }
-        } else {
-            let str = String::from(&token[1..token.len() - 1]);
-            return Some(Token::Str(str));
         }
+        return Some(Token::Str(str));
     }
 
     if is_bool(token) {
@@ -89,7 +83,7 @@ fn get_token(token: &str, next: Option<&char>) -> Option<Token> {
 }
 
 fn is_symbol(token: &str) -> bool {
-    let symbols = vec!["{", "}", "[", "]", ",", ":"];
+    let symbols = vec!["{", "}", "[", "]", ","];
     symbols.iter().filter(|x| **x == token).count() == 1
 }
 
@@ -100,7 +94,6 @@ fn get_symbol_token(token: &str) -> Token {
         "[" => Token::BracketOpen,
         "]" => Token::BracketClose,
         "," => Token::Comma,
-        ":" => Token::Colon,
         _ => panic!("Impossible: symbol token match error"),
     }
 }
@@ -183,16 +176,9 @@ mod test {
 
     #[test]
     fn it_should_return_a_token_symbol() {
-        use super::Token::{BracketClose, BracketOpen, Colon, Comma, CurlyClose, CurlyOpen};
-        let symbols = vec!["{", "}", "[", "]", ",", ":"];
-        let expected = [
-            CurlyOpen,
-            CurlyClose,
-            BracketOpen,
-            BracketClose,
-            Comma,
-            Colon,
-        ];
+        use super::Token::{BracketClose, BracketOpen, Comma, CurlyClose, CurlyOpen};
+        let symbols = vec!["{", "}", "[", "]", ","];
+        let expected = [CurlyOpen, CurlyClose, BracketOpen, BracketClose, Comma];
         for (i, s) in symbols.iter().enumerate() {
             assert_eq!(expected[i], get_token(s, None).unwrap())
         }
@@ -214,8 +200,7 @@ mod test {
     #[test]
     fn it_should_tokenize() {
         use super::Token::{
-            Bool, BracketClose, BracketOpen, Colon, Comma, CurlyClose, CurlyOpen, Key, Null, Num,
-            Str,
+            Bool, BracketClose, BracketOpen, Comma, CurlyClose, CurlyOpen, Key, Null, Num, Str,
         };
         let content = String::from(
             "{\"pairs\": [ {\"x0\": 3.1, \"x1\": 3.3  }, { \"Hello\": \"world\", \"bool\": true, \"null\": null } ] }"
@@ -223,29 +208,23 @@ mod test {
         let expected: Vec<Token> = vec![
             CurlyOpen,
             Key("pairs".to_string()),
-            Colon,
             BracketOpen,
             CurlyOpen,
             Key("x0".to_string()),
-            Colon,
             Num(3.1f64),
             Comma,
             Key("x1".to_string()),
-            Colon,
             Num(3.3f64),
             CurlyClose,
             Comma,
             CurlyOpen,
             Key("Hello".to_string()),
-            Colon,
             Str("world".to_string()),
             Comma,
             Key("bool".to_string()),
-            Colon,
             Bool(true),
             Comma,
             Key("null".to_string()),
-            Colon,
             Null,
             CurlyClose,
             BracketClose,
