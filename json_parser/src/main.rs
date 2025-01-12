@@ -20,7 +20,7 @@ fn main() {
     handle_binary(&args);
 }
 
-fn handle_json(args: &[String]) -> HashMap<String, Value> {
+fn handle_json(args: &[String]) -> HashMap<String, Box<Value>> {
     let filename = &args[1];
     let content = fs::read_to_string(filename).expect("Error while reading json file");
     json_parse(content)
