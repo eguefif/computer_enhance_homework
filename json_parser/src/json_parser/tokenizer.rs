@@ -9,8 +9,8 @@ pub enum Token {
     Comma,
     Colon,
     Minus,
-    Key(String),
-    Num(i64),
+    Str(String),
+    Num(f64),
     Bool(bool),
     Null,
 }
@@ -50,11 +50,32 @@ fn get_token(token: &str) -> Option<Token> {
     if token.len() == 1 && is_symbol(token) {
         return Some(get_symbol_token(token));
     }
+    if is_string(token) {
+        let str = String::from(&token[1..token.len() - 1]);
+        return Some(Token::Str(str));
+    }
+    if is_bool(token) {
+        match token {
+            "true" => return Some(Token::Bool(true)),
+            "false" => return Some(Token::Bool(false)),
+            _ => panic!("Impossible token value bool"),
+        }
+    }
+    if let Ok(num) = token.parse::<f64>() {
+        return Some(Token::Num(num));
+    }
     None
 }
 
+fn is_bool(token: &str) -> bool {
+    if token == "true" || token == "false" {
+        return true;
+    }
+    false
+}
+
 fn is_symbol(token: &str) -> bool {
-    let symbols = vec!["{", "}", "[", "]", ",", ":", "-"];
+    let symbols = vec!["{", "}", "[", "]", ",", ":"];
     symbols.iter().filter(|x| **x == token).count() == 1
 }
 
@@ -66,9 +87,17 @@ fn get_symbol_token(token: &str) -> Token {
         "]" => Token::BracketClose,
         "," => Token::Comma,
         ":" => Token::Colon,
-        "-" => Token::Minus,
         _ => panic!("Impossible: symbol token match error"),
     }
+}
+
+fn is_string(token: &str) -> bool {
+    if token.len() > 2 {
+        if token.chars().next().unwrap() == '\"' && token.chars().last().unwrap() == '\"' {
+            return true;
+        }
+    }
+    false
 }
 
 fn sanitize(content: &str) -> String {
@@ -86,9 +115,32 @@ mod test {
     use super::*;
 
     #[test]
+    fn it_should_return_a_num_token() {
+        let result = get_token("-123.122").unwrap();
+        assert_eq!(result, Token::Num(-123.122f64));
+    }
+
+    #[test]
+    fn it_should_return_a_bool_token_true() {
+        let result = get_token("true").unwrap();
+        assert_eq!(result, Token::Bool(true));
+    }
+    #[test]
+    fn it_should_return_a_bool_token_false() {
+        let result = get_token("false").unwrap();
+        assert_eq!(result, Token::Bool(false));
+    }
+
+    #[test]
+    fn it_should_return_a_str_token() {
+        let result = get_token("\"hello world str\"").unwrap();
+        assert_eq!(result, Token::Str("hello world str".to_string()));
+    }
+
+    #[test]
     fn it_should_return_a_token_symbol() {
-        use super::Token::{BracketClose, BracketOpen, Colon, Comma, CurlyClose, CurlyOpen, Minus};
-        let symbols = vec!["{", "}", "[", "]", ",", ":", "-"];
+        use super::Token::{BracketClose, BracketOpen, Colon, Comma, CurlyClose, CurlyOpen};
+        let symbols = vec!["{", "}", "[", "]", ",", ":"];
         let expected = [
             CurlyOpen,
             CurlyClose,
@@ -96,7 +148,6 @@ mod test {
             BracketClose,
             Comma,
             Colon,
-            Minus,
         ];
         for (i, s) in symbols.iter().enumerate() {
             assert_eq!(expected[i], get_token(s).unwrap())
