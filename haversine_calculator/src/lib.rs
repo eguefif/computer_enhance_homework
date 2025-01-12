@@ -1,12 +1,7 @@
-#![allow(dead_code)]
-#![allow(clippy::new_without_default)]
-
+pub mod parser;
 use crate::parser::parser::parse_tokens;
 use crate::parser::tokenizer::tokenize;
 use std::collections::HashMap;
-
-pub mod parser;
-pub mod tokenizer;
 
 #[derive(Clone, Debug)]
 pub enum Value {
