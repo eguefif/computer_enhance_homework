@@ -194,15 +194,44 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn it_should_tokenize() {
+        use super::Token::{
+            Bool, BracketClose, BracketOpen, Colon, Comma, CurlyClose, CurlyOpen, Null, Num, Str,
+        };
         let content = String::from(
-            "{\"pairs\": [ {\"x0\": 312.31, \"x1\": 32.123, \"y0\": -32.123, \"y1\": 32.123 }, {\"x0\": 312.31, \"x1\": 32.123, \"y0\": -32.123, \"y1\": 32.123} ]}",
+            "{\"pairs\": [ {\"x0\": 3.1, \"x1\": 3.3  }, { \"Hello\": \"world\", \"bool\": true } ] }"
         );
-        let expected: Vec<&str> = vec![
-            "pairs", ":", "[", "{", "x0", ":", "312.31", ",", "x1", ":", "32.123", ",", "y0", ":",
-            "-32.123", ",", "y1", ":", "32.123", "}", "{", "x0", ":", "312.31", ",", "x1", ":",
-            "32.123", ",", "y0", ":", "-32.123", ",", "y1", ":", "32.123", "}", "]",
+        let expected: Vec<Token> = vec![
+            CurlyOpen,
+            Str("pairs".to_string()),
+            Colon,
+            BracketOpen,
+            CurlyOpen,
+            Str("x0".to_string()),
+            Colon,
+            Num(3.1f64),
+            Comma,
+            Str("x1".to_string()),
+            Colon,
+            Num(3.3f64),
+            CurlyClose,
+            Comma,
+            CurlyOpen,
+            Str("Hello".to_string()),
+            Colon,
+            Str("world".to_string()),
+            Comma,
+            Str("bool".to_string()),
+            Colon,
+            Bool(true),
+            CurlyClose,
+            BracketClose,
+            CurlyClose,
         ];
+
+        let result = tokenize(&content);
+        for (i, item) in result.iter().enumerate() {
+            assert_eq!(*item, expected[i]);
+        }
     }
 }
