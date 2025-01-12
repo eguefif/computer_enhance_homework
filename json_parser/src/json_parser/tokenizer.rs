@@ -7,7 +7,6 @@ pub enum Token {
     BracketClose,
     Comma,
     Colon,
-    Minus,
     Str(String),
     Num(f64),
     Bool(bool),
