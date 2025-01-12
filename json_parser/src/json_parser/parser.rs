@@ -1,9 +1,10 @@
 use crate::json_parser::tokenizer::Token;
-use crate::json_parser::Pairs;
+use crate::json_parser::Value;
 
-const OPENINGS: [char; 4] = ['{', '[', '"', ':'];
-const CLOSINGS: [char; 4] = ['}', '}', '"', ','];
+use std::collections::HashMap;
 
-pub fn parse_tokens(tokens: Vec<Token>) -> Pairs {
-    Pairs::new()
+pub fn parse_tokens(tokens: Vec<Token>) -> HashMap<String, Value> {
+    let retval = HashMap::new();
+
+    retval
 }

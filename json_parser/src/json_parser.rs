@@ -3,36 +3,20 @@
 
 use crate::json_parser::parser::parse_tokens;
 use crate::json_parser::tokenizer::tokenize;
+use std::collections::HashMap;
 
 pub mod parser;
 pub mod tokenizer;
 
-pub fn json_parse(content: String) -> Pairs {
+pub enum Value {
+    Str(String),
+    Num(f64),
+    Bool(bool),
+    List(Vec<Value>),
+    Object(HashMap<String, Box<Value>>),
+}
+
+pub fn json_parse(content: String) -> HashMap<String, Value> {
     let tokens = tokenize(&content);
     parse_tokens(tokens)
-}
-
-#[derive(Debug)]
-pub struct Pair {
-    x0: f64,
-    x1: f64,
-    y0: f64,
-    y1: f64,
-}
-
-impl Pair {
-    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64) -> Pair {
-        Pair { x0, x1, y0, y1 }
-    }
-}
-
-#[derive(Debug)]
-pub struct Pairs {
-    pairs: Vec<Pair>,
-}
-
-impl Pairs {
-    pub fn new() -> Pairs {
-        Pairs { pairs: vec![] }
-    }
 }
