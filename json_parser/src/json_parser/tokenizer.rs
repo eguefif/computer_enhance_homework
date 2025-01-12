@@ -18,10 +18,21 @@ pub fn tokenize(content: &str) -> Vec<Token> {
     get_tokens(&sanitized_content)
 }
 
+fn sanitize(content: &str) -> String {
+    let mut retval = String::with_capacity(content.len());
+    content.chars().for_each(|x| {
+        if x != '\n' && x != '\t' && x != ' ' && x != '\r' {
+            retval.push(x);
+        }
+    });
+    retval
+}
+
 fn get_tokens(content: &str) -> Vec<Token> {
     let mut tokens = Vec::new();
     let mut chars = content.chars().peekable();
     let mut token = String::new();
+
     loop {
         if let Some(c) = chars.next() {
             token.push(c);
@@ -37,20 +48,23 @@ fn get_tokens(content: &str) -> Vec<Token> {
 }
 
 fn get_token(token: &str, next: Option<&char>) -> Option<Token> {
-    if token.len() == 1 && is_symbol(token) {
+    if is_symbol(token) {
         return Some(get_symbol_token(token));
     }
+
     if is_string(token) {
         let str = String::from(&token[1..token.len() - 1]);
         return Some(Token::Str(str));
     }
+
     if is_bool(token) {
         match token {
             "true" => return Some(Token::Bool(true)),
             "false" => return Some(Token::Bool(false)),
-            _ => panic!("Impossible token value bool"),
+            _ => panic!("Impossible: bool token value error"),
         }
     }
+
     if is_number(token, next) {
         println!("{:?}", next);
         if let Ok(num) = token.parse::<f64>() {
@@ -58,13 +72,6 @@ fn get_token(token: &str, next: Option<&char>) -> Option<Token> {
         }
     }
     None
-}
-
-fn is_bool(token: &str) -> bool {
-    if token == "true" || token == "false" {
-        return true;
-    }
-    false
 }
 
 fn is_symbol(token: &str) -> bool {
@@ -93,6 +100,13 @@ fn is_string(token: &str) -> bool {
     false
 }
 
+fn is_bool(token: &str) -> bool {
+    if token == "true" || token == "false" {
+        return true;
+    }
+    false
+}
+
 fn is_number(token: &str, next: Option<&char>) -> bool {
     if token.len() > 2 {
         let mut chars = token.chars();
@@ -106,16 +120,6 @@ fn is_number(token: &str, next: Option<&char>) -> bool {
         }
     }
     false
-}
-
-fn sanitize(content: &str) -> String {
-    let mut retval = String::with_capacity(content.len());
-    content.chars().for_each(|x| {
-        if x != '\n' && x != '\t' && x != ' ' && x != '\r' {
-            retval.push(x);
-        }
-    });
-    retval
 }
 
 #[cfg(test)]

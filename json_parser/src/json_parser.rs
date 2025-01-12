@@ -8,9 +8,7 @@ pub mod parser;
 pub mod tokenizer;
 
 pub fn json_parse(content: String) -> Pairs {
-    println!("{content}");
     let tokens = tokenize(&content);
-    println!("tokens: {:?}", tokens);
     parse_tokens(tokens)
 }
 
