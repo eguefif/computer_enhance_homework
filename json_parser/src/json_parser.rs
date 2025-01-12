@@ -2,13 +2,13 @@
 #![allow(clippy::new_without_default)]
 
 use crate::json_parser::parser::parse_tokens;
-use crate::json_parser::tokenizer::tokenize;
+use crate::json_parser::tokenizer::Tokens;
 
 pub mod parser;
 pub mod tokenizer;
 
 pub fn json_parse(content: String) -> Pairs {
-    let tokens = tokenize(content);
+    let tokens = Tokens::new(content);
     parse_tokens(tokens)
 }
 
