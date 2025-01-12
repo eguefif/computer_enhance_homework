@@ -1,8 +1,8 @@
-use crate::json_parser::tokenizer::Token;
-use crate::json_parser::tokenizer::Token::{
+use crate::parser::tokenizer::Token;
+use crate::parser::tokenizer::Token::{
     Bool, BracketClose, BracketOpen, Comma, CurlyClose, CurlyOpen, Key, Null, Num, Str,
 };
-use crate::json_parser::Value;
+use crate::Value;
 
 use std::collections::HashMap;
 

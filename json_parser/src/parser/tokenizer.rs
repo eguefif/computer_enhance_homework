@@ -1,4 +1,3 @@
-// TODO: add Key to enum. A key always end by : and remove :
 #[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     CurlyOpen,
