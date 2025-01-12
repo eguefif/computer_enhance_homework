@@ -21,8 +21,8 @@ fn main() {
     }
     let json = handle_json(&args);
     let pairs = get_pairs(json);
-    compute(&pairs);
-    handle_binary(&args);
+    let json_average = compute(&pairs);
+    handle_binary(&args, json_average);
 }
 
 fn handle_json(args: &[String]) -> HashMap<String, Box<Value>> {
@@ -31,13 +31,13 @@ fn handle_json(args: &[String]) -> HashMap<String, Box<Value>> {
     json_parse(content)
 }
 
-fn handle_binary(args: &[String]) {
+fn handle_binary(args: &[String], json_average: f64) {
     let binary;
     if args.len() == 3 {
         binary = &args[2];
         let check_average: f64 = get_check_average(binary);
         println!("Validation");
         println!("Reference sum: {}", check_average);
-        println!("Diff: {}", check_average);
+        println!("Diff: {}", check_average - json_average);
     }
 }

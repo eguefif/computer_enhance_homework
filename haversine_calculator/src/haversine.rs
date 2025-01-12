@@ -1,7 +1,7 @@
 const EARTH_RADIUS: f64 = 6372.8;
 use crate::pair::Pair;
 
-pub fn compute(pairs: &[Pair]) -> Vec<f64> {
+pub fn compute(pairs: &[Pair]) -> f64 {
     let mut results: Vec<f64> = vec![];
     for pair in pairs.iter() {
         let res = compute_haversine(pair.x0, pair.x1, pair.y0, pair.y1);
@@ -9,8 +9,9 @@ pub fn compute(pairs: &[Pair]) -> Vec<f64> {
     }
     println!("Method: cluster");
     println!("Pair count: {}", results.len());
-    println!("Pair count: {}", average(&results));
-    results
+    let av = average(&results);
+    println!("Pair count: {}", av);
+    av
 }
 
 #[allow(clippy::excessive_precision)]
