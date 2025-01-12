@@ -7,6 +7,7 @@ pub enum Token {
     BracketClose,
     Comma,
     Colon,
+    Key(String),
     Str(String),
     Num(f64),
     Bool(bool),
@@ -53,8 +54,18 @@ fn get_token(token: &str, next: Option<&char>) -> Option<Token> {
     }
 
     if is_string(token) {
-        let str = String::from(&token[1..token.len() - 1]);
-        return Some(Token::Str(str));
+        if let Some(next_char) = next {
+            if *next_char == ':' {
+                let str = String::from(&token[1..token.len() - 1]);
+                return Some(Token::Key(str));
+            } else {
+                let str = String::from(&token[1..token.len() - 1]);
+                return Some(Token::Str(str));
+            }
+        } else {
+            let str = String::from(&token[1..token.len() - 1]);
+            return Some(Token::Str(str));
+        }
     }
 
     if is_bool(token) {
@@ -70,6 +81,9 @@ fn get_token(token: &str, next: Option<&char>) -> Option<Token> {
         if let Ok(num) = token.parse::<f64>() {
             return Some(Token::Num(num));
         }
+    }
+    if token == "null" {
+        return Some(Token::Null);
     }
     None
 }
@@ -200,34 +214,39 @@ mod test {
     #[test]
     fn it_should_tokenize() {
         use super::Token::{
-            Bool, BracketClose, BracketOpen, Colon, Comma, CurlyClose, CurlyOpen, Null, Num, Str,
+            Bool, BracketClose, BracketOpen, Colon, Comma, CurlyClose, CurlyOpen, Key, Null, Num,
+            Str,
         };
         let content = String::from(
-            "{\"pairs\": [ {\"x0\": 3.1, \"x1\": 3.3  }, { \"Hello\": \"world\", \"bool\": true } ] }"
+            "{\"pairs\": [ {\"x0\": 3.1, \"x1\": 3.3  }, { \"Hello\": \"world\", \"bool\": true, \"null\": null } ] }"
         );
         let expected: Vec<Token> = vec![
             CurlyOpen,
-            Str("pairs".to_string()),
+            Key("pairs".to_string()),
             Colon,
             BracketOpen,
             CurlyOpen,
-            Str("x0".to_string()),
+            Key("x0".to_string()),
             Colon,
             Num(3.1f64),
             Comma,
-            Str("x1".to_string()),
+            Key("x1".to_string()),
             Colon,
             Num(3.3f64),
             CurlyClose,
             Comma,
             CurlyOpen,
-            Str("Hello".to_string()),
+            Key("Hello".to_string()),
             Colon,
             Str("world".to_string()),
             Comma,
-            Str("bool".to_string()),
+            Key("bool".to_string()),
             Colon,
             Bool(true),
+            Comma,
+            Key("null".to_string()),
+            Colon,
+            Null,
             CurlyClose,
             BracketClose,
             CurlyClose,
