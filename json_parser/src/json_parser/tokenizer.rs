@@ -1,5 +1,3 @@
-use std::str::Chars;
-
 #[derive(Debug, PartialEq)]
 pub enum Token {
     CurlyOpen,
@@ -15,38 +13,30 @@ pub enum Token {
     Null,
 }
 
-pub struct Tokens {
-    content: Vec<char>,
+pub fn tokenize(content: &str) -> Vec<Token> {
+    let sanitized_content = sanitize(content);
+    get_tokens(&sanitized_content)
 }
 
-impl Tokens {
-    pub fn new(content: String) -> Self {
-        Tokens {
-            content: sanitize(&content).chars().collect::<Vec<_>>(),
+fn get_tokens(content: &str) -> Vec<Token> {
+    let mut tokens = Vec::new();
+    let mut chars = content.chars().peekable();
+    let mut token = String::new();
+    loop {
+        if let Some(c) = chars.next() {
+            token.push(c);
+        } else {
+            break;
+        }
+        if let Some(retval) = get_token(&token, chars.peek()) {
+            tokens.push(retval);
+            token.clear();
         }
     }
+    tokens
 }
 
-impl Iterator for Tokens {
-    type Item = Token;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let mut token = String::new();
-        loop {
-            if let Some(c) = self.content.iter().next() {
-                token.push(*c);
-            } else {
-                break;
-            }
-            if let retval = get_token(&token)? {
-                return Some(retval);
-            }
-        }
-        None
-    }
-}
-
-fn get_token(token: &str) -> Option<Token> {
+fn get_token(token: &str, next: Option<&char>) -> Option<Token> {
     if token.len() == 1 && is_symbol(token) {
         return Some(get_symbol_token(token));
     }
@@ -61,8 +51,11 @@ fn get_token(token: &str) -> Option<Token> {
             _ => panic!("Impossible token value bool"),
         }
     }
-    if let Ok(num) = token.parse::<f64>() {
-        return Some(Token::Num(num));
+    if is_number(token, next) {
+        println!("{:?}", next);
+        if let Ok(num) = token.parse::<f64>() {
+            return Some(Token::Num(num));
+        }
     }
     None
 }
@@ -100,6 +93,21 @@ fn is_string(token: &str) -> bool {
     false
 }
 
+fn is_number(token: &str, next: Option<&char>) -> bool {
+    if token.len() > 2 {
+        let mut chars = token.chars();
+        let first = chars.next().unwrap();
+        if let Some(last) = next {
+            if (first.is_digit(10) || first == '-' || first == '+')
+                && (*last == ',' || *last == ']' || *last == '}')
+            {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 fn sanitize(content: &str) -> String {
     let mut retval = String::with_capacity(content.len());
     content.chars().for_each(|x| {
@@ -115,25 +123,43 @@ mod test {
     use super::*;
 
     #[test]
-    fn it_should_return_a_num_token() {
-        let result = get_token("-123.122").unwrap();
+    fn it_should_return_a_none() {
+        let result = get_token("fsdf", None);
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn it_should_return_a_num_token_minus() {
+        let result = get_token("-123.122", Some(&'}')).unwrap();
         assert_eq!(result, Token::Num(-123.122f64));
     }
 
     #[test]
+    fn it_should_return_a_num_token_plus() {
+        let result = get_token("+123.122", Some(&']')).unwrap();
+        assert_eq!(result, Token::Num(123.122f64));
+    }
+
+    #[test]
+    fn it_should_return_a_num_token_int() {
+        let result = get_token("123", Some(&',')).unwrap();
+        assert_eq!(result, Token::Num(123.0f64));
+    }
+
+    #[test]
     fn it_should_return_a_bool_token_true() {
-        let result = get_token("true").unwrap();
+        let result = get_token("true", None).unwrap();
         assert_eq!(result, Token::Bool(true));
     }
     #[test]
     fn it_should_return_a_bool_token_false() {
-        let result = get_token("false").unwrap();
+        let result = get_token("false", None).unwrap();
         assert_eq!(result, Token::Bool(false));
     }
 
     #[test]
     fn it_should_return_a_str_token() {
-        let result = get_token("\"hello world str\"").unwrap();
+        let result = get_token("\"hello world str\"", None).unwrap();
         assert_eq!(result, Token::Str("hello world str".to_string()));
     }
 
@@ -150,7 +176,7 @@ mod test {
             Colon,
         ];
         for (i, s) in symbols.iter().enumerate() {
-            assert_eq!(expected[i], get_token(s).unwrap())
+            assert_eq!(expected[i], get_token(s, None).unwrap())
         }
     }
 
