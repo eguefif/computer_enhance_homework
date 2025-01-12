@@ -17,6 +17,7 @@ fn main() {
         return;
     }
     let json = handle_json(&args);
+    println!("{:?}", json);
     handle_binary(&args);
 }
 

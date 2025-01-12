@@ -39,6 +39,10 @@ fn get_tokens(content: &str) -> Vec<Token> {
         } else {
             break;
         }
+        if token == ":" {
+            token.clear();
+            continue;
+        }
         if let Some(retval) = get_token(&token, chars.peek()) {
             tokens.push(retval);
             token.clear();
@@ -71,7 +75,6 @@ fn get_token(token: &str, next: Option<&char>) -> Option<Token> {
     }
 
     if is_number(token, next) {
-        println!("{:?}", next);
         if let Ok(num) = token.parse::<f64>() {
             return Some(Token::Num(num));
         }

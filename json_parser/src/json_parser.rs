@@ -8,6 +8,7 @@ use std::collections::HashMap;
 pub mod parser;
 pub mod tokenizer;
 
+#[derive(Clone, Debug)]
 pub enum Value {
     Str(String),
     Num(f64),
