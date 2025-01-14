@@ -9,12 +9,13 @@ use crate::haversine::compute;
 use crate::pair::get_pairs;
 use crate::profiler::{display_profile, push_time};
 use haversine_calculator::json_parse;
+use profile::profile;
 
 use std::env;
 use std::fs;
 
+#[profile]
 fn main() {
-    push_time("start");
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 || args.len() > 3 {
         println!("Usage: cargo run -- file.json [binary.f64]");
@@ -35,7 +36,6 @@ fn main() {
     let json_average = compute(&pairs);
     push_time("compute stop");
     handle_binary(&args, json_average);
-    display_profile()
 }
 
 fn handle_binary(args: &[String], json_average: f64) {
