@@ -6,59 +6,64 @@ pub mod time_tools;
 use crate::binary_handler::get_check_average;
 use crate::haversine::compute;
 use crate::pair::get_pairs;
-use crate::time_tools::get_freq_estimate;
+use crate::time_tools::{get_freq_estimate, get_rdtsc};
 use haversine_calculator::json_parse;
-use std::time::Instant;
 
 use std::env;
 use std::fs;
 
 fn main() {
-    let start = Instant::now();
+    let start = get_rdtsc();
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 || args.len() > 3 {
         println!("Usage: cargo run -- file.json [binary.f64]");
         return;
     }
     let filename = &args[1];
-    let setup = start.elapsed().as_millis();
+    let setup = get_rdtsc();
 
     let content = fs::read_to_string(filename).expect("Error while reading json file");
-    let file_loading = start.elapsed().as_millis();
+    let file_loading = get_rdtsc();
 
     let json = json_parse(content);
     let pairs = get_pairs(json);
-    let parsing = start.elapsed().as_millis();
+    let parsing = get_rdtsc();
 
     let json_average = compute(&pairs);
-    let compute = start.elapsed().as_millis();
-    display_profile(setup, file_loading, parsing, compute as f64);
+    let compute = get_rdtsc();
+    display_profile(start, setup, file_loading, parsing, compute);
     handle_binary(&args, json_average);
 }
 
-fn display_profile(setup: u128, file_loading: u128, parsing: u128, total: f64) {
+fn display_profile(start: u64, setup: u64, file_loading: u64, parsing: u64, compute: u64) {
+    let total = compute - start;
     println!(
-        "Total time: {total} (guessed freq: {}",
+        "Total time: {total} (guessed freq): {}",
         get_freq_estimate(100)
     );
+    let setup_elapsed = setup - start;
     println!(
         "setup: {}ms ({:.2}%)",
-        setup,
-        (setup as f64) / total * 100.0
+        setup_elapsed,
+        (setup_elapsed as f64) / (total as f64) * 100.0
     );
-    let loading = file_loading - setup;
-    println!("loading: {}ms ({:.2}%)", loading, (loading as f64) / total);
+    let loading_elapsed = file_loading - setup;
+    println!(
+        "loading: {}ms ({:.2}%)",
+        loading_elapsed,
+        100.0 * (loading_elapsed as f64) / (total as f64)
+    );
     let parse = parsing - file_loading;
     println!(
         "parsing: {}ms ({:.2}%)",
         parse,
-        (parse as f64) / total * 100.0
+        100.0 * (parse as f64) / (total as f64)
     );
-    let comp = (total as u128) - parsing;
+    let comp = compute - parsing;
     println!(
         "computing: {}ms ({:.2}%)",
         comp,
-        (comp as f64) / total * 100.0
+        100.0 * (comp as f64) / (total as f64)
     );
 }
 

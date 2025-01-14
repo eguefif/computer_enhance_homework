@@ -1,7 +1,7 @@
 use core::arch::x86_64::_rdtsc;
 use std::time::Instant;
 
-fn get_rdtsc() -> u64 {
+pub fn get_rdtsc() -> u64 {
     return unsafe { _rdtsc() };
 }
 
