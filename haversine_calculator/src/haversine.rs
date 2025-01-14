@@ -1,6 +1,9 @@
 const EARTH_RADIUS: f64 = 6372.8;
 use crate::pair::Pair;
+use crate::profiler::push_time;
+use profile::zone;
 
+#[zone]
 pub fn compute(pairs: &[Pair]) -> f64 {
     let mut results: Vec<f64> = vec![];
     for pair in pairs.iter() {

@@ -1,5 +1,8 @@
-use haversine_calculator::Value;
+use crate::parser::Value;
+use crate::profiler::push_time;
+use profile::zone;
 use std::collections::HashMap;
+
 #[derive(PartialEq)]
 pub struct Pair {
     pub x0: f64,
@@ -14,6 +17,7 @@ impl Pair {
     }
 }
 
+#[zone]
 pub fn get_pairs(json: HashMap<String, Box<Value>>) -> Vec<Pair> {
     let mut retval = Vec::new();
     let list = json

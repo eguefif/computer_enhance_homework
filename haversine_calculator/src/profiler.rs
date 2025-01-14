@@ -41,7 +41,7 @@ fn display_zones<'a>(iter: &mut impl Iterator<Item = &'a (String, u64)>, total: 
         let start_point = iter.next();
         if let Some(start_point) = start_point {
             let stop_point = iter.next().expect(&format!(
-                "Error: missing end point for start point for: {}",
+                "Error: missing end point for start point for: {:?}",
                 start_point.0
             ));
             let elapsed = stop_point.1 - start_point.1;

@@ -2,7 +2,7 @@ use crate::parser::tokenizer::Token;
 use crate::parser::tokenizer::Token::{
     Bool, BracketClose, BracketOpen, Comma, CurlyClose, CurlyOpen, Key, Null, Num, Str,
 };
-use crate::Value;
+use crate::parser::Value;
 
 use std::collections::HashMap;
 

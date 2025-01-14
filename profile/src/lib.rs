@@ -4,36 +4,38 @@ use quote::quote;
 use syn::{parse_macro_input, ItemFn};
 
 #[proc_macro_attribute]
-pub fn profile(_args: TokenStream, input: TokenStream) -> TokenStream{
+pub fn profile(_args: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ItemFn);
     let statements = input.block.stmts.clone();
     let sig = input.sig.clone();
     let vis = input.vis.clone();
-    quote!{
+    quote! {
         #vis #sig {
             push_time("start");
 
             #(#statements)*
             display_profile();
         }
-    }.into()
+    }
+    .into()
 }
 
 #[proc_macro_attribute]
-pub fn zone(_args: TokenStream, input: TokenStream) -> TokenStream{
+pub fn zone(_args: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ItemFn);
-    let statements = input.block.stmts.clone();
-    let sig = input.sig.clone();
-    let vis = input.vis.clone();
-    quote!{
+    let attrs = &input.attrs;
+    let block = &input.block;
+    let sig = &input.sig;
+    let vis = &input.vis;
+    let start = &format!("{}", sig.ident);
+    quote! {
+        #(#attrs)*
         #vis #sig {
-            push_time("{}", #sig);
-
-            let __result = {
-                #(#statements)*
+            push_time(&#start);
+            let __result = (|| #block)();
+            push_time("stop");
+            return __result;
             }
-            push_time("{} stop", #sig);
-        __result
-        }
-    }.into()
+    }
+    .into()
 }

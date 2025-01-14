@@ -1,45 +1,47 @@
 pub mod binary_handler;
 pub mod haversine;
 pub mod pair;
+pub mod parser;
 pub mod profiler;
 pub mod time_tools;
 
 use crate::binary_handler::get_check_average;
 use crate::haversine::compute;
 use crate::pair::get_pairs;
+use crate::parser::json_parse;
 use crate::profiler::{display_profile, push_time};
-use haversine_calculator::json_parse;
-use profile::profile;
+use profile::{profile, zone};
 
 use std::env;
 use std::fs;
 
 #[profile]
 fn main() {
+    if let Some(content) = get_content() {
+        let json = json_parse(content);
+        let pairs = get_pairs(json);
+
+        let json_average = compute(&pairs);
+        handle_binary(json_average);
+    }
+}
+
+#[zone]
+fn get_content() -> Option<String> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 || args.len() > 3 {
         println!("Usage: cargo run -- file.json [binary.f64]");
-        return;
+        return None;
     }
     let filename = &args[1];
 
-    let content = fs::read_to_string(filename).expect("Error while reading json file");
-
-    push_time("parsing");
-
-    let json = json_parse(content);
-    let pairs = get_pairs(json);
-
-    push_time("parsing stop");
-
-    push_time("compute");
-    let json_average = compute(&pairs);
-    push_time("compute stop");
-    handle_binary(&args, json_average);
+    Some(fs::read_to_string(filename).expect("Error while reading json file"))
 }
 
-fn handle_binary(args: &[String], json_average: f64) {
+#[zone]
+fn handle_binary(json_average: f64) {
     let binary;
+    let args: Vec<String> = env::args().collect();
     if args.len() == 3 {
         binary = &args[2];
         let check_average: f64 = get_check_average(binary);
