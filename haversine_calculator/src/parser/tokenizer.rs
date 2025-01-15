@@ -1,3 +1,6 @@
+use crate::profiler::push_time;
+use crate::time_tools::get_rdtsc;
+use profile::zone;
 #[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     CurlyOpen,
@@ -12,6 +15,7 @@ pub enum Token {
     Null,
 }
 
+#[zone]
 pub fn tokenize(content: &str) -> Vec<Token> {
     let sanitized_content = sanitize(content);
     get_tokens(&sanitized_content)

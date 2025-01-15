@@ -12,11 +12,6 @@ pub fn parse_tokens(tokens: Vec<Token>) -> HashMap<String, Box<Value>> {
     get_json(&mut iterator)
 }
 
-enum CollectionType {
-    Hash,
-    List,
-}
-
 fn get_json(iterator: &mut impl Iterator<Item = Token>) -> HashMap<String, Box<Value>> {
     let mut retval = HashMap::new();
     let mut key: Option<String> = None;

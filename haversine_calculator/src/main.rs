@@ -10,6 +10,7 @@ use crate::haversine::compute;
 use crate::pair::get_pairs;
 use crate::parser::json_parse;
 use crate::profiler::{display_profile, push_time};
+use crate::time_tools::get_rdtsc;
 use profile::{profile, zone};
 
 use std::env;

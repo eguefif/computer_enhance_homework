@@ -1,5 +1,6 @@
 use crate::parser::Value;
 use crate::profiler::push_time;
+use crate::time_tools::get_rdtsc;
 use profile::zone;
 use std::collections::HashMap;
 

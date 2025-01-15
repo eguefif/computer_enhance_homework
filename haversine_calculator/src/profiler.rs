@@ -1,10 +1,17 @@
+#[allow(static_mut_refs)]
 use crate::time_tools::{get_freq_estimate, get_rdtsc};
 
 static mut TIMING_POINTS: Vec<(String, u64)> = vec![];
 
-pub fn push_time(name: &str) {
+pub fn begin_profiling() {
     unsafe {
-        TIMING_POINTS.push((name.to_string(), get_rdtsc()));
+        TIMING_POINTS.push(("start".to_string(), get_rdtsc()));
+    }
+}
+
+pub fn push_time(name: &str, time: u64) {
+    unsafe {
+        TIMING_POINTS.push((name.to_string(), time));
     }
 }
 
@@ -27,7 +34,7 @@ fn display_total<'a>(
     let start = iter.next().expect("Error: profiling, missing start value");
     let total = last - start.1;
     println!(
-        "Total time: {} ms (guessed freq): {}",
+        "\nTotal time: {} ms (guessed freq): {}",
         (total as u128) / freq,
         freq
     );
@@ -37,18 +44,13 @@ fn display_total<'a>(
 
 fn display_zones<'a>(iter: &mut impl Iterator<Item = &'a (String, u64)>, total: u64, freq: u128) {
     loop {
-        let start_point = iter.next();
-        if let Some(start_point) = start_point {
-            let stop_point = iter.next().expect(&format!(
-                "Error: missing end point for start point for: {:?}",
-                start_point.0
-            ));
-            let elapsed = stop_point.1 - start_point.1;
+        let zone = iter.next();
+        if let Some(zone) = zone {
             println!(
-                "{}: {} ms ({:.2})",
-                start_point.0,
-                (elapsed as u128) / freq,
-                100.0 * (elapsed as f64) / (total as f64)
+                "{}: {} ms ({:.2}%)",
+                zone.0,
+                (zone.1 as u128) / freq,
+                100.0 * (zone.1 as f64) / (total as f64)
             );
         } else {
             break;

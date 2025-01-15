@@ -4,6 +4,7 @@ pub mod tokenizer;
 use crate::parser::json_parser::parse_tokens;
 use crate::parser::tokenizer::tokenize;
 use crate::profiler::push_time;
+use crate::time_tools::get_rdtsc;
 use profile::zone;
 use std::collections::HashMap;
 
