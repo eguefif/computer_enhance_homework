@@ -9,7 +9,9 @@ use crate::binary_handler::get_check_average;
 use crate::haversine::compute;
 use crate::pair::get_pairs;
 use crate::parser::json_parse;
-use crate::profiler::{display_profile, push_time};
+use crate::profiler::{
+    begin_profiling, display_profile, get_profiling_parent, push_time, set_profiling_parent,
+};
 use crate::time_tools::get_rdtsc;
 use profile::{profile, zone};
 

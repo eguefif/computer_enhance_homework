@@ -11,7 +11,7 @@ pub fn profile(_args: TokenStream, input: TokenStream) -> TokenStream {
     let vis = input.vis.clone();
     quote! {
         #vis #sig {
-            push_time("start", get_rdtsc());
+            begin_profiling();
 
             #(#statements)*
             display_profile();
@@ -31,9 +31,12 @@ pub fn zone(_args: TokenStream, input: TokenStream) -> TokenStream {
     quote! {
         #(#attrs)*
         #vis #sig {
+            let parent = get_profiling_parent();
+            set_profiling_parent(#label.to_string());
             let start = get_rdtsc();
             let __result = (|| #block)();
-            push_time(#label, get_rdtsc() - start);
+            push_time(#label.to_string(), get_rdtsc() - start, parent.clone());
+            set_profiling_parent(parent);
             return __result;
             }
     }
