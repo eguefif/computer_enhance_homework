@@ -69,15 +69,29 @@ fn display_zones<'a>(iter: &mut impl Iterator<Item = &'a Zone>, total: u64, freq
     loop {
         let zone = iter.next();
         if let Some(zone) = zone {
+            let child_time = get_child_time(&zone.label);
+            let actual_total = zone.elapsed - child_time;
             println!(
-                "{}: {} ms ({:.2}%) parent: {}",
+                "{}: {} ms ({:.2}%, {:.2}%)",
                 zone.label,
                 (zone.elapsed as u128) / freq,
+                100.0 * (actual_total as f64) / (total as f64),
                 100.0 * (zone.elapsed as f64) / (total as f64),
-                zone.parent,
             );
         } else {
             break;
         }
     }
+}
+
+fn get_child_time(label: &str) -> u64 {
+    let mut counter = 0;
+    unsafe {
+        for zone in TIMING_POINTS.iter() {
+            if zone.parent == label {
+                counter += zone.elapsed;
+            }
+        }
+    }
+    counter
 }
