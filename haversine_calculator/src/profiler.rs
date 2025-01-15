@@ -9,14 +9,13 @@ pub fn push_time(name: &str) {
 }
 
 pub fn display_profile() {
+    let last = get_rdtsc();
     let mut iter;
-    let last;
     let freq = get_freq_estimate(100);
     unsafe {
-        last = TIMING_POINTS[TIMING_POINTS.len() - 1].clone();
         iter = TIMING_POINTS.iter();
     }
-    let total = display_total(&mut iter, last.1, freq);
+    let total = display_total(&mut iter, last, freq);
     display_zones(&mut iter, total, freq);
 }
 
