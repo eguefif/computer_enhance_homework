@@ -1,39 +1,56 @@
 #![allow(static_mut_refs)]
 use crate::time_tools::{get_freq_estimate, get_rdtsc};
 
+#[derive(Debug)]
 struct Zone {
     elapsed: u64,
     label: String,
-    parent: String,
+    child_time: u64,
 }
 
 static mut CURRENT_PARENT: String = String::new();
 
-static mut TIMING_POINTS: Vec<Zone> = vec![];
+static mut ZONES: Vec<Zone> = vec![];
 
 pub fn begin_profiling() {
     let zone = Zone {
         elapsed: get_rdtsc(),
         label: "start".to_string(),
-        parent: "".to_string(),
+        child_time: 0,
     };
     unsafe {
-        TIMING_POINTS.push(zone);
-        CURRENT_PARENT.push_str("main");
+        ZONES.push(zone);
     }
 }
 
-pub fn push_time(name: String, time: u64, parent: String) {
+pub fn update_parent(name: String, time: u64) {
+    unsafe {
+        for zone in ZONES.iter_mut() {
+            if zone.label == name {
+                zone.child_time += time;
+            }
+        }
+    }
+}
+
+pub fn push_time(name: String, time: u64) {
+    unsafe {
+        for zone in ZONES.iter_mut() {
+            if zone.label == name {
+                zone.elapsed += time;
+                return;
+            }
+        }
+    }
     let zone = Zone {
         elapsed: time,
         label: name,
-        parent,
+        child_time: 0,
     };
     unsafe {
-        TIMING_POINTS.push(zone);
+        ZONES.push(zone);
     }
 }
-
 pub fn get_profiling_parent() -> String {
     unsafe { CURRENT_PARENT.clone() }
 }
@@ -47,7 +64,7 @@ pub fn display_profile() {
     let mut iter;
     let freq = get_freq_estimate(100);
     unsafe {
-        iter = TIMING_POINTS.iter();
+        iter = ZONES.iter();
     }
     let total = display_total(&mut iter, last, freq);
     display_zones(&mut iter, total, freq);
@@ -68,32 +85,21 @@ fn display_total<'a>(iter: &mut impl Iterator<Item = &'a Zone>, last: u64, freq:
 fn display_zones<'a>(iter: &mut impl Iterator<Item = &'a Zone>, total: u64, freq: u128) {
     println!("{:^15}: {:^8} ({}, {})", "label", "time", "actual", "total");
     println!("-------------------------------------------");
-    loop {
-        let zone = iter.next();
-        if let Some(zone) = zone {
-            let child_time = get_child_time(&zone.label);
-            let actual_total = zone.elapsed - child_time;
-            println!(
-                "{:>15}:{:>7}ms ({:3.2}%, {:3.2}%)",
-                zone.label,
-                (zone.elapsed as u128) / freq,
-                100.0 * (actual_total as f64) / (total as f64),
-                100.0 * (zone.elapsed as f64) / (total as f64),
-            );
-        } else {
-            break;
-        }
+    let mut actual_count = 0;
+    for zone in iter {
+        let actual_total = zone.elapsed - zone.child_time;
+        actual_count += actual_total;
+        println!(
+            "{:>15}:{:>7}ms ({:3.2}%, {:3.2}%) {:?}",
+            zone.label,
+            (zone.elapsed as u128) / freq,
+            100.0 * (actual_total as f64) / (total as f64),
+            100.0 * (zone.elapsed as f64) / (total as f64),
+            zone
+        );
     }
-}
-
-fn get_child_time(label: &str) -> u64 {
-    let mut counter = 0;
-    unsafe {
-        for zone in TIMING_POINTS.iter() {
-            if zone.parent == label {
-                counter += zone.elapsed;
-            }
-        }
-    }
-    counter
+    println!(
+        "Actual total: {:3.2} %",
+        (actual_count as f64) / (total as f64) * 100.0
+    );
 }

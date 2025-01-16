@@ -1,8 +1,7 @@
-const EARTH_RADIUS: f64 = 6372.8;
 use crate::pair::Pair;
-use crate::profiler::{get_profiling_parent, push_time, set_profiling_parent};
-use crate::time_tools::get_rdtsc;
 use profile::zone;
+
+const EARTH_RADIUS: f64 = 6372.8;
 
 #[zone]
 pub fn compute(pairs: &[Pair]) -> f64 {

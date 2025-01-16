@@ -1,6 +1,4 @@
 use crate::parser::Value;
-use crate::profiler::{get_profiling_parent, push_time, set_profiling_parent};
-use crate::time_tools::get_rdtsc;
 use profile::zone;
 use std::collections::HashMap;
 
