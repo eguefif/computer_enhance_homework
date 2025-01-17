@@ -3,10 +3,9 @@ use crate::time_tools::{get_freq_estimate, get_rdtsc};
 
 #[derive(Debug)]
 struct Zone {
-    elapsed: u64,
-    root_elapsed: u64,
+    exclusive_elapsed: u64,
+    inclusive_elapsed: u64,
     label: String,
-    child_elapsed: u64,
     hit_count: u128,
 }
 
@@ -16,10 +15,9 @@ static mut ZONES: Vec<Zone> = vec![];
 
 pub fn begin_profiling() {
     let zone = Zone {
-        elapsed: get_rdtsc(),
-        root_elapsed: 0,
+        exclusive_elapsed: get_rdtsc(),
+        inclusive_elapsed: 0,
         label: "start".to_string(),
-        child_elapsed: 0,
         hit_count: 0,
     };
     unsafe {
@@ -32,10 +30,9 @@ pub fn create_zone(name: String) {
         return;
     }
     let zone = Zone {
-        elapsed: 0,
+        exclusive_elapsed: 0,
         label: name,
-        child_elapsed: 0,
-        root_elapsed: 0,
+        inclusive_elapsed: 0,
         hit_count: 0,
     };
     unsafe {
@@ -54,11 +51,11 @@ fn is_zone(name: &str) -> bool {
     false
 }
 
-pub fn get_root_elapsed(name: &str) -> u64 {
+pub fn get_inclusive_elapsed(name: &str) -> u64 {
     unsafe {
         for zone in ZONES.iter_mut() {
             if zone.label == name {
-                return zone.root_elapsed;
+                return zone.inclusive_elapsed;
             }
         }
     }
@@ -69,7 +66,7 @@ pub fn update_parent(name: String, time: u64) {
     unsafe {
         for zone in ZONES.iter_mut() {
             if zone.label == name {
-                zone.child_elapsed += time;
+                zone.exclusive_elapsed -= time;
             }
         }
     }
@@ -79,8 +76,8 @@ pub fn push_time(name: String, time: u64, root_time: u64) {
     unsafe {
         for zone in ZONES.iter_mut() {
             if zone.label == name {
-                zone.elapsed += time;
-                zone.root_elapsed = time + root_time;
+                zone.exclusive_elapsed += time;
+                zone.inclusive_elapsed = time + root_time;
                 zone.hit_count += 1;
                 return;
             }
@@ -109,7 +106,7 @@ pub fn display_profile() {
 
 fn display_total<'a>(iter: &mut impl Iterator<Item = &'a Zone>, last: u64, freq: u128) -> u64 {
     let start = iter.next().expect("Error: profiling, missing start value");
-    let total = last - start.elapsed;
+    let total = last - start.exclusive_elapsed;
     println!(
         "\nTotal time: {} ms (guessed freq): {}",
         (total as u128) / freq,
@@ -122,32 +119,19 @@ fn display_total<'a>(iter: &mut impl Iterator<Item = &'a Zone>, last: u64, freq:
 fn display_zones<'a>(iter: &mut impl Iterator<Item = &'a Zone>, total: u64, freq: u128) {
     println!("{:^15}: {:^8} ({}, {})", "label", "time", "actual", "total");
     println!("-------------------------------------------");
-    let mut actual_count = 0;
-    let mut total_count = 0;
     for zone in iter {
-        let actual_total = zone.elapsed - zone.child_elapsed;
-        actual_count += actual_total;
-        total_count += zone.root_elapsed;
         print!(
             "{:>23}:{:>7}ms ({:3.2}%",
             format!("{}({})", zone.label, zone.hit_count),
-            (zone.elapsed as u128) / freq,
-            100.0 * (actual_total as f64) / (total as f64),
+            (zone.exclusive_elapsed as u128) / freq,
+            100.0 * (zone.exclusive_elapsed as f64) / (total as f64),
         );
-        if actual_total != zone.root_elapsed {
+        if zone.exclusive_elapsed != zone.inclusive_elapsed {
             print!(
                 ", {:3.2}% with children",
-                100.0 * (zone.root_elapsed as f64) / (total as f64)
+                100.0 * (zone.inclusive_elapsed as f64) / (total as f64)
             );
         }
         println!(")");
     }
-    println!(
-        "Actual total: {:3.2} %",
-        (actual_count as f64) / (total as f64) * 100.0
-    );
-    println!(
-        "Total: {:3.2} %",
-        (total_count as f64) / (total as f64) * 100.0
-    );
 }
