@@ -32,9 +32,10 @@ pub fn zone(_args: TokenStream, input: TokenStream) -> TokenStream {
     quote! {
         #(#attrs)*
         #vis #sig {
-            use crate::profiler::{get_profiling_parent, push_time, set_profiling_parent, update_parent};
+            use crate::profiler::{get_profiling_parent, push_time, set_profiling_parent, update_parent, get_root_elapsed};
             use crate::time_tools::get_rdtsc;
             let parent = get_profiling_parent();
+            let root_elapsed = get_root_elapsed(#label);
             set_profiling_parent(#label.to_string());
             let start = get_rdtsc();
 
@@ -42,7 +43,7 @@ pub fn zone(_args: TokenStream, input: TokenStream) -> TokenStream {
 
             let elapsed = get_rdtsc() - start;
             update_parent(parent.clone(), elapsed);
-            push_time(#label.to_string(), elapsed);
+            push_time(#label.to_string(), elapsed, root_elapsed);
             set_profiling_parent(parent.to_string());
             return __result;
             }
