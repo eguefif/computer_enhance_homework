@@ -32,8 +32,11 @@ pub fn zone(_args: TokenStream, input: TokenStream) -> TokenStream {
     quote! {
         #(#attrs)*
         #vis #sig {
-            use crate::profiler::{get_profiling_parent, push_time, set_profiling_parent, update_parent, get_inclusive_elapsed, create_zone};
+            use crate::profiler::{get_profiling_parent, push_time, set_profiling_parent, update_parent, get_inclusive_elapsed, create_zone, is_profiling_activated};
             use crate::time_tools::get_rdtsc;
+            if !is_profiling_activated(){
+                return (|| #block)();
+            }
 
             create_zone(#label.to_string());
             let parent = get_profiling_parent();

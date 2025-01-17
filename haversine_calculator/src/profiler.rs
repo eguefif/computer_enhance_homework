@@ -1,6 +1,12 @@
 #![allow(static_mut_refs)]
 use crate::time_tools::{get_freq_estimate, get_rdtsc};
 
+const PROFILING_ACTIVATED: bool = true;
+
+pub fn is_profiling_activated() -> bool {
+    PROFILING_ACTIVATED
+}
+
 #[derive(Debug)]
 struct Zone {
     child_exclusive_elapsed: u64,
@@ -101,7 +107,9 @@ pub fn display_profile() {
         iter = ZONES.iter();
     }
     let total = display_total(&mut iter, last, freq);
-    display_zones(&mut iter, total, freq);
+    if PROFILING_ACTIVATED {
+        display_zones(&mut iter, total, freq);
+    }
 }
 
 fn display_total<'a>(iter: &mut impl Iterator<Item = &'a Zone>, last: u64, freq: u128) -> u64 {

@@ -19,6 +19,7 @@ pub fn tokenize(content: &str) -> Vec<Token> {
     get_tokens(&sanitized_content)
 }
 
+#[zone]
 fn sanitize(content: &str) -> String {
     let mut retval = String::with_capacity(content.len());
     content.chars().for_each(|x| {
@@ -29,6 +30,7 @@ fn sanitize(content: &str) -> String {
     retval
 }
 
+#[zone]
 fn get_tokens(content: &str) -> Vec<Token> {
     let mut tokens = Vec::new();
     let mut chars = content.chars().peekable();
