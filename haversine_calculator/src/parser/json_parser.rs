@@ -7,13 +7,13 @@ use profile::zone;
 
 use std::collections::HashMap;
 
+#[zone(tokens.len())]
 pub fn parse_tokens(tokens: Vec<Token>) -> HashMap<String, Box<Value>> {
     let mut iterator = tokens.into_iter();
     iterator.next();
     get_json(&mut iterator)
 }
 
-#[zone]
 fn get_json(iterator: &mut impl Iterator<Item = Token>) -> HashMap<String, Box<Value>> {
     let mut retval = HashMap::new();
     let mut key: Option<String> = None;
@@ -54,7 +54,6 @@ fn get_json(iterator: &mut impl Iterator<Item = Token>) -> HashMap<String, Box<V
     retval
 }
 
-#[zone]
 fn get_list(iterator: &mut impl Iterator<Item = Token>) -> Option<Value> {
     let mut retval = Vec::new();
     loop {

@@ -2,7 +2,7 @@ use crate::parser::Value;
 use profile::zone;
 use std::collections::HashMap;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct Pair {
     pub x0: f64,
     pub x1: f64,
@@ -16,7 +16,7 @@ impl Pair {
     }
 }
 
-#[zone]
+#[zone(json.len())]
 pub fn get_pairs(json: HashMap<String, Box<Value>>) -> Vec<Pair> {
     let mut retval = Vec::new();
     let list = json

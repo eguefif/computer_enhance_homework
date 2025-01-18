@@ -13,6 +13,7 @@ struct Zone {
     child_inclusive_elapsed: u64,
     label: String,
     hit_count: u128,
+    data: usize,
 }
 
 static mut CURRENT_PARENT: String = String::new();
@@ -25,13 +26,14 @@ pub fn begin_profiling() {
         child_inclusive_elapsed: 0,
         label: "start".to_string(),
         hit_count: 0,
+        data: 0,
     };
     unsafe {
         ZONES.push(zone);
     }
 }
 
-pub fn create_zone(name: String) {
+pub fn create_zone(name: String, data_count: usize) {
     if is_zone(&name) {
         return;
     }
@@ -40,6 +42,7 @@ pub fn create_zone(name: String) {
         label: name,
         child_inclusive_elapsed: 0,
         hit_count: 0,
+        data: data_count,
     };
     unsafe {
         ZONES.push(zone);
@@ -140,6 +143,10 @@ fn display_zones<'a>(iter: &mut impl Iterator<Item = &'a Zone>, total: u64, freq
                 100.0 * (zone.child_inclusive_elapsed as f64) / (total as f64)
             );
         }
-        println!(")");
+        let data_meg = (zone.data as f64) / (1024.0 * 1024.0);
+        let bytes_per_sec =
+            (zone.data as f64) / ((zone.child_inclusive_elapsed as f64) / (freq as f64));
+        let data_gig = bytes_per_sec / (1024.0 * 1024.0 * 1024.0);
+        println!(") {:.0}mo at {:.4} gig/s", data_meg, data_gig);
     }
 }

@@ -1,5 +1,4 @@
 use proc_macro::TokenStream;
-
 use quote::quote;
 use syn::{parse_macro_input, ItemFn};
 
@@ -21,9 +20,12 @@ pub fn profile(_args: TokenStream, input: TokenStream) -> TokenStream {
     .into()
 }
 
+//TODO: parse args to generate code and pass the data
+
 #[proc_macro_attribute]
-pub fn zone(_args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn zone(args: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ItemFn);
+    let args = proc_macro2::TokenStream::from(args);
     let attrs = &input.attrs;
     let block = &input.block;
     let sig = &input.sig;
@@ -38,7 +40,7 @@ pub fn zone(_args: TokenStream, input: TokenStream) -> TokenStream {
                 return (|| #block)();
             }
 
-            create_zone(#label.to_string());
+            create_zone(#label.to_string(), #args);
             let parent = get_profiling_parent();
             let root_elapsed = get_inclusive_elapsed(#label);
             set_profiling_parent(#label.to_string());

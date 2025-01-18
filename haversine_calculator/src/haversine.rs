@@ -3,7 +3,7 @@ use profile::zone;
 
 const EARTH_RADIUS: f64 = 6372.8;
 
-#[zone]
+#[zone(pairs.len())]
 pub fn compute(pairs: &[Pair]) -> f64 {
     let mut results: Vec<f64> = vec![];
     for pair in pairs.iter() {

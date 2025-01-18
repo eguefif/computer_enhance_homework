@@ -9,7 +9,7 @@ use crate::binary_handler::get_check_average;
 use crate::haversine::compute;
 use crate::pair::get_pairs;
 use crate::parser::json_parse;
-use profile::{profile, zone};
+use profile::profile;
 
 use std::env;
 use std::fs;
@@ -25,7 +25,6 @@ fn main() {
     }
 }
 
-#[zone]
 fn get_content() -> Option<String> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 || args.len() > 3 {
@@ -37,7 +36,6 @@ fn get_content() -> Option<String> {
     Some(fs::read_to_string(filename).expect("Error while reading json file"))
 }
 
-#[zone]
 fn handle_binary(json_average: f64) {
     let binary;
     let args: Vec<String> = env::args().collect();
